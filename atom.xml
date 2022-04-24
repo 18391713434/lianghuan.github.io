@@ -6,7 +6,7 @@
   <link href="https://www.lianghuan.zone/atom.xml" rel="self"/>
   
   <link href="https://www.lianghuan.zone/"/>
-  <updated>2021-05-20T03:56:02.021Z</updated>
+  <updated>2022-04-24T02:23:15.261Z</updated>
   <id>https://www.lianghuan.zone/</id>
   
   <author>
@@ -15,6 +15,29 @@
   </author>
   
   <generator uri="https://hexo.io/">Hexo</generator>
+  
+  <entry>
+    <title>编译运行Linux0.11内核程序</title>
+    <link href="https://www.lianghuan.zone/2022/04/16/%E7%BC%96%E8%AF%91%E8%BF%90%E8%A1%8CLinux0-11%E5%86%85%E6%A0%B8%E7%A8%8B%E5%BA%8F/"/>
+    <id>https://www.lianghuan.zone/2022/04/16/%E7%BC%96%E8%AF%91%E8%BF%90%E8%A1%8CLinux0-11%E5%86%85%E6%A0%B8%E7%A8%8B%E5%BA%8F/</id>
+    <published>2022-04-16T12:38:49.000Z</published>
+    <updated>2022-04-24T02:23:15.261Z</updated>
+    
+    <content type="html"><![CDATA[<p>@<a href="%E7%9B%AE%E5%BD%95%EF%BC%9A">TOC</a></p><p><strong>注意：实验之前需要用VNC搭建Ubuntu可视化界面</strong></p><h4 id="一、编译内核"><a href="#一、编译内核" class="headerlink" title="一、编译内核"></a>一、编译内核</h4><p>首先要进入 linux-0.11 目录，然后执行 make 命令：</p><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">$ cd .&#x2F;linux-0.11&#x2F;</span><br><span class="line">$ make all</span><br></pre></td></tr></table></figure><p>因为 all 是最常用的参数，所以可以省略，只用 make，效果一样。<br>在多处理器的系统上，可以用 -j 参数进行并行编译，加快速度。例如双 CPU 的系统可以：</p><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">$ make -j 2</span><br><span class="line">copy</span><br></pre></td></tr></table></figure><p>最后生成的目标文件是一个软盘镜像文件—— linux-0.11/Image（下面的图中给出了详细的信息）。如果将此镜像文件写到一张 1.44MB 的软盘上，就可以启动一台真正的计算机。<br>linux-0.11 目录下是全部的源代码，很多实验内容都是要靠修改这些代码来完成。修改后需要重新编译内核，还是执行命令：make all。<br>make 命令会自动跳过未被修改的文件，链接时直接使用上次编译生成的目标文件，从而节约编译时间。但如果重新编译后，你的修改貌似没有生效，可以试试先 make clean ，再 make all（或者一行命令：make clean &amp;&amp; make all。make clean 是删除上一次编译生成的所有中间文件和目标文件，确保是在全新的状态下编译整个工程。</p><h4 id="二、在-Bochs-中运行最新编译好的内核"><a href="#二、在-Bochs-中运行最新编译好的内核" class="headerlink" title="二、在 Bochs 中运行最新编译好的内核"></a>二、在 Bochs 中运行最新编译好的内核</h4><p>退出当前linux-0.11目录在上级目录中有Bochs的执行命令run，输入命令启动Bochs。<br><img src="https://img-blog.csdnimg.cn/f6a8070df16f44bb9877b1818b6f3783.png?x-oss-process=image/watermark,type_d3F5LXplbmhlaQ,shadow_50,text_Q1NETiBA5bC55aSp5LuH54ix5pCe56CB,size_16,color_FFFFFF,t_70,g_se,x_16#pic_center" alt="在这里插入图片描述"></p><p>如果出现 Bochs 的窗口，里面显示 linux 的引导过程，最后停止在 [/usr/root/]#，表示运行成功。</p><h4 id="三、调试"><a href="#三、调试" class="headerlink" title="三、调试"></a>三、调试</h4><h5 id="3-1、汇编级调"><a href="#3-1、汇编级调" class="headerlink" title="3.1、汇编级调"></a>3.1、汇编级调</h5><p>在oslab目录下启动gbd-asm后即可进行调试，详细的调试指令可通过help可进行查看。</p><h5 id="3-2、C语言级调试领"><a href="#3-2、C语言级调试领" class="headerlink" title="3.2、C语言级调试领"></a>3.2、C语言级调试领</h5><p>C 语言级调试稍微复杂一些。首先执行如下命令：</p><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">$ cd ~&#x2F;oslab</span><br><span class="line">$ .&#x2F;dbg-c</span><br></pre></td></tr></table></figure><p>然后再打开一个终端窗口，执行：</p><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">$ cd ~&#x2F;oslab</span><br><span class="line">$ .&#x2F;rungdb</span><br></pre></td></tr></table></figure><p>注意：启动的顺序不能交换，否则 gdb 无法连接。</p><h4 id="四、文件交换"><a href="#四、文件交换" class="headerlink" title="四、文件交换"></a>四、文件交换</h4><p>接下来讲解一下 Ubuntu 和 Linux 0.11 之间的文件交换如何启动，开始设置文件交换之前，务必关闭所有的 Bochs 进程。<br>oslab 下的 hdc-0.11-new.img 是 0.11 内核启动后的根文件系统镜像文件，相当于在 bochs 虚拟机里装载的硬盘。在 Ubuntu 上访问其内容的方法是：</p><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">$ cd ~&#x2F;oslab&#x2F;</span><br><span class="line">$ sudo .&#x2F;mount-hdc</span><br></pre></td></tr></table></figure><p>之后，hdc 目录下就是和 0.11 内核一模一样的文件系统了，可以读写任何文件（可能有些文件要用 sudo 才能访问）。<br>经过 sudo ./mount-hdc 这样处理以后，我们可以在 Ubuntu 的 hdc 目录下创建一个 xxx.c 文件，然后利用 Ubuntu 上的编辑工具（如 gedit 等）实现对 xxx.c 文件的编辑工作，在编辑保存以后。</p><p>执行 sudo umount hdc 后，再进入 Linux 0.11（即 run 启动 bochs 以后）就会看到这个 xxx.c（即如下图所示），这样就避免了在 Linux 0.11 上进行编辑 xxx.c 的麻烦，因为 Linux 0.11 作为一个很小的操作系统，其上的编辑工具只有 vi，使用起来非常不便。</p><blockquote><p>注意 1：不要在 0.11 内核运行的时候 mount 镜像文件，否则可能会损坏文件系统。同理，也不要在已经 mount 的时候运行<br>0.11 内核。</p><p>注意 2：在关闭 Bochs 之前，需要先在 0.11 的命令行运行 “sync”，确保所有缓存数据都存盘后，再关闭 Bochs。</p></blockquote>]]></content>
+    
+    
+    <summary type="html">linux-0.11 目录下是全部的源代码，很多实验内容都是要靠修改这些代码来完成。修改后需要重新编译内核，还是执行命令：make all。</summary>
+    
+    
+    
+    <category term="操作系统" scheme="https://www.lianghuan.zone/categories/%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F/"/>
+    
+    
+    <category term="Linux" scheme="https://www.lianghuan.zone/tags/Linux/"/>
+    
+    <category term="操作系统" scheme="https://www.lianghuan.zone/tags/%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F/"/>
+    
+  </entry>
   
   <entry>
     <title>GRASP软件设计的模式和原则</title>
